@@ -19,6 +19,13 @@
   <a href="#-核心算法">算法逻辑</a> •
   <a href="#-开发计划">路线图</a>
 </p>
+<p align="center">
+  <img width="1280" height="551" alt="74cc35b7924751999b326a70fecfa129_720" src="https://github.com/user-attachments/assets/52fc53ab-a995-463c-aa86-5f67c78b6a19" />
+</p>
+
+<p align="center">
+  <img width="760" height="5650" alt="64ee9a3be32d5f9840e6838471da0029" src="https://github.com/user-attachments/assets/db24f943-fe23-4fd9-bd6d-d7668ac76049" />
+</p>
 
 ---
 
