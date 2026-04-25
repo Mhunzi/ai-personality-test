@@ -1,15 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { calculateResult, type TestResult } from '@/lib/calculator'
 import type { Answer } from '@/types'
 import ShareButton from '@/components/ShareButton'
+import html2canvas from 'html2canvas'
 
 export default function ResultPage() {
   const router = useRouter()
   const [result, setResult] = useState<TestResult | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // 从localStorage读取答案
@@ -33,6 +36,38 @@ export default function ResultPage() {
     localStorage.setItem('lastResult', JSON.stringify(testResult))
   }, [router])
 
+  // 保存卡片为图片
+  const handleSaveCard = async () => {
+    if (!cardRef.current) return
+
+    setSaving(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#1a0b2e',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      })
+
+      // 转换为图片并下载
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `AI人格测试-${result?.personality}-${Date.now()}.png`
+          link.click()
+          URL.revokeObjectURL(url)
+        }
+      })
+    } catch (error) {
+      console.error('保存失败:', error)
+      alert('保存失败，请重试')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading || !result) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black flex items-center justify-center">
@@ -52,6 +87,8 @@ export default function ResultPage() {
       <div className="stars3"></div>
 
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+        {/* 可保存的卡片区域 */}
+        <div ref={cardRef}>
         {/* 头部 */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 neon-text">
@@ -262,6 +299,7 @@ export default function ResultPage() {
             </p>
           </div>
         </div>
+        </div>
 
         {/* 操作按钮 */}
         <div className="space-y-4 mb-8">
@@ -284,12 +322,11 @@ export default function ResultPage() {
             </button>
 
             <button
-              onClick={() => {
-                alert('保存卡片功能开发中...')
-              }}
-              className="flex-1 px-6 py-3 bg-gray-800/50 text-gray-300 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300"
+              onClick={handleSaveCard}
+              disabled={saving}
+              className="flex-1 px-6 py-3 bg-gray-800/50 text-gray-300 rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              💾 保存卡片
+              {saving ? '⏳ 保存中...' : '💾 保存卡片'}
             </button>
           </div>
         </div>
