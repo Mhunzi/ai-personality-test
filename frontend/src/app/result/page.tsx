@@ -12,10 +12,26 @@ export default function ResultPage() {
   const [result, setResult] = useState<TestResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [copied, setCopied] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // 从localStorage读取答案
+    // 1. 先尝试从 URL 参数读取结果（用于分享链接）
+    const urlParams = new URLSearchParams(window.location.search)
+    const resultParam = urlParams.get('data')
+
+    if (resultParam) {
+      try {
+        const decodedResult = JSON.parse(decodeURIComponent(resultParam))
+        setResult(decodedResult)
+        setLoading(false)
+        return
+      } catch (error) {
+        console.error('解析 URL 参数失败:', error)
+      }
+    }
+
+    // 2. 从localStorage读取答案
     const answersStr = localStorage.getItem('answers')
     const userInfoStr = localStorage.getItem('userInfo')
 
@@ -65,6 +81,22 @@ export default function ResultPage() {
       alert('保存失败，请重试')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // 复制结果链接
+  const handleCopyLink = async () => {
+    if (!result) return
+
+    const resultUrl = `${window.location.origin}/result?data=${encodeURIComponent(JSON.stringify(result))}`
+
+    try {
+      await navigator.clipboard.writeText(resultUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('复制失败:', error)
+      alert('复制失败，请重试')
     }
   }
 
@@ -307,10 +339,18 @@ export default function ResultPage() {
           <ShareButton
             title={`我的AI时代人格：${result.personality} - ${result.mbtiInfo.name}`}
             text={`我在AI时代人格测试中是${result.personality}（${result.mbtiInfo.name}），AI适应力${result.aiScore}分！快来测测你的AI时代人格吧！`}
+            url={`${typeof window !== 'undefined' ? window.location.origin : ''}/result?data=${encodeURIComponent(JSON.stringify(result))}`}
           />
 
           {/* 其他操作按钮 */}
           <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleCopyLink}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-blue-600 transition-all duration-300"
+            >
+              {copied ? '✅ 已复制链接' : '🔗 复制结果链接'}
+            </button>
+
             <button
               onClick={() => {
                 localStorage.clear()
