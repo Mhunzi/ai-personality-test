@@ -57,7 +57,7 @@
 ### 部署步骤
 ```bash
 # 1. 克隆项目
-git clone [https://github.com/YourUsername/ai-personality-test.git](https://github.com/YourUsername/ai-personality-test.git)
+git clone https://github.com/Mhunzi/ai-personality-test.git
 cd ai-personality-test/frontend
 
 # 2. 安装依赖 (推荐使用缓存加速)
